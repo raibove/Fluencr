@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search, Tag, Users, Target, Sparkles, Hash } from 'lucide-react';
 import type { BrandDetails } from './type';
 import { extractAndFixJSON } from './utils';

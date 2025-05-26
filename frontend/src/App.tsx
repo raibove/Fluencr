@@ -1,4 +1,5 @@
 import './App.css'
+import BrandDetailsDisplay from './BrandDetailsDisplay';
 import Home from './Home';
 import InfluencerSearchGenerator from './InfluencerSearchGenerator';
 import InfluencerSearchForm from './InputForm'
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/form" element={<InfluencerSearchForm />} />
         <Route path="/search" element={<InfluencerSearchGenerator />} />
+        <Route path="/brand-details" element={<BrandDetailsDisplay />} />
       </Routes>
    </Router>
   )

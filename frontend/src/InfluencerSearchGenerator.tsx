@@ -1,66 +1,104 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, Search, Copy, Check, Target } from 'lucide-react';
 
+interface Data {
+    creator_profiles: string[],
+    search_keywords: string[],
+    lifestyle_topics: string[],
+    relevant_hashtags: string[],
+    customer_type: string[]
+}
+
 const InfluencerSearchGenerator = () => {
-    const data = {
-        creator_profiles: [
-            "Young adults", "Fitness enthusiasts", "Health-conscious professionals",
-            "Wellness experts", "Tech-savvy individuals", "Entrepreneurs",
-            "Inspirational figures", "Motivational speakers", "Lifestyle bloggers",
-            "Healthy living advocates"
-        ],
-        search_keywords: [
-            "fitness tips", "wellness hacks", "health and wellness", "self-improvement",
-            "productivity hacks", "mindfulness", "motivation", "inspiration",
-            "lifestyle transformation", "tech-enabled solutions", "innovation",
-            "health and wellness tips", "fitness motivation", "wellness inspiration",
-            "healthy living", "self-care", "mindful living"
-        ],
-        lifestyle_topics: [
-            "wellness", "fitness", "health", "self-improvement", "productivity",
-            "motivation", "innovation", "technology", "lifestyle", "personal development"
-        ],
-        relevant_hashtags: [
-            "#wellnessWednesday", "#fitnessmotivation", "#healthyliving", "#selfcare",
-            "#productivityhacks", "#motivationmonday", "#innovationnation", "#techforwellness",
-            "#lifestyleblogger", "#personalgrowth", "#healthandwellness", "#fitnessjourney",
-            "#wellnessjourney", "#selfimprovement"
-        ]
-    };
 
-    const customerTypes = [
-        'Gen Z', 'Working Women', 'Moms', 'Students', 'Millennials', 'Professionals',
-        'Teens', 'Young Adults', 'Parents', 'Fitness Enthusiasts', 'Entrepreneurs'
-    ];
-
+    // const [searchData, setSearchData] = useState<Data>(
+    //     {
+    //         creator_profiles: [
+    //             "Young adults", "Fitness enthusiasts", "Health-conscious professionals",
+    //             "Wellness experts", "Tech-savvy individuals", "Entrepreneurs",
+    //             "Inspirational figures", "Motivational speakers", "Lifestyle bloggers",
+    //             "Healthy living advocates"
+    //         ],
+    //         search_keywords: [
+    //             "fitness tips", "wellness hacks", "health and wellness", "self-improvement",
+    //             "productivity hacks", "mindfulness", "motivation", "inspiration",
+    //             "lifestyle transformation", "tech-enabled solutions", "innovation",
+    //             "health and wellness tips", "fitness motivation", "wellness inspiration",
+    //             "healthy living", "self-care", "mindful living"
+    //         ],
+    //         lifestyle_topics: [
+    //             "wellness", "fitness", "health", "self-improvement", "productivity",
+    //             "motivation", "innovation", "technology", "lifestyle", "personal development"
+    //         ],
+    //         relevant_hashtags: [
+    //             "#wellnessWednesday", "#fitnessmotivation", "#healthyliving", "#selfcare",
+    //             "#productivityhacks", "#motivationmonday", "#innovationnation", "#techforwellness",
+    //             "#lifestyleblogger", "#personalgrowth", "#healthandwellness", "#fitnessjourney",
+    //             "#wellnessjourney", "#selfimprovement"
+    //         ],
+    //         customer_type: [
+    //             'Gen Z', 'Working Women', 'Moms', 'Students', 'Millennials', 'Professionals',
+    //             'Teens', 'Young Adults', 'Parents', 'Fitness Enthusiasts', 'Entrepreneurs'
+    //         ]
+    //     }
+    // )
+    const [searchData, setSearchData] = useState<Data>(
+        {
+            creator_profiles: [],
+            search_keywords: [],
+            lifestyle_topics: [],
+            relevant_hashtags: [],
+            customer_type: []
+        }
+    )
     const [searchTerms, setSearchTerms] = useState<string[]>([]);
     const [copiedIndex, setCopiedIndex] = useState<null | number>(null);
+
+    useEffect(() => {
+        const formData = JSON.parse(localStorage.getItem('formData') || '{}');
+        const apiResults = JSON.parse(localStorage.getItem('apiResults') || '{}');
+
+        const newData: Data = {
+            creator_profiles: apiResults.keywords.creator_profiles,
+            search_keywords: apiResults.keywords.search_keywords,
+            lifestyle_topics: apiResults.topics.lifestyle_topics,
+            relevant_hashtags: apiResults.topics.relevant_hashtags,
+            customer_type: formData.idealCustomers
+        }
+        console.log(apiResults, formData)
+        console.log(newData.search_keywords, newData.lifestyle_topics, newData.relevant_hashtags, newData.customer_type)
+        setSearchData(newData);
+    }, [])
+
+    useEffect(() => {
+        generateSearchTerms();
+    }, [searchData])
 
     const getRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
     const generateSearchTerms = () => {
         const terms = [];
 
-        for (let i = 0; i < 4; i++) {
-            const keyword = getRandom(data.search_keywords);
-            const customer = getRandom(customerTypes);
+        for (let i = 0; i < Math.min(searchData.search_keywords.length, 4, searchData.customer_type.length); i++) {
+            const keyword = getRandom(searchData.search_keywords);
+            const customer = getRandom(searchData.customer_type);
             terms.push(`${keyword} for ${customer.toLowerCase()}`);
         }
 
-        for (let i = 0; i < 4; i++) {
-            const hashtag = getRandom(data.relevant_hashtags);
+        for (let i = 0; i < Math.min(searchData.relevant_hashtags.length, 4); i++) {
+            const hashtag = getRandom(searchData.relevant_hashtags);
             terms.push(hashtag);
         }
 
-        for (let i = 0; i < 4; i++) {
-            const topic = getRandom(data.lifestyle_topics);
+        for (let i = 0; i < Math.min(searchData.lifestyle_topics.length, 4); i++) {
+            const topic = getRandom(searchData.lifestyle_topics);
             terms.push(`${topic} 2025`);
             terms.push(`best ${topic} strategies`);
         }
 
 
-        for (let i = 0; i < 4; i++) {
-            const topic = getRandom(data.creator_profiles);
+        for (let i = 0; i < Math.min(searchData.creator_profiles.length, 4); i++) {
+            const topic = getRandom(searchData.creator_profiles);
             terms.push(`${topic}`);
         }
         const shuffledTerms = terms.sort(() => Math.random() - 0.5);
@@ -79,10 +117,6 @@ const InfluencerSearchGenerator = () => {
             console.error('Failed to copy text: ', err);
         }
     };
-
-    useEffect(() => {
-        generateSearchTerms();
-    }, []);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-6">

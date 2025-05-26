@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Search, Tag, Users, Target, Sparkles, Hash } from 'lucide-react';
 import type { BrandDetails } from './type';
 import { extractAndFixJSON } from './utils';
+import { useNavigate } from 'react-router';
 
 const DEFAULT_LOADER_MESSAGE = 'Loading, please wait...'
 
 const InfluencerSearchForm = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<BrandDetails>({
     brandType: '',
     productFocus: '',
@@ -83,13 +85,15 @@ const InfluencerSearchForm = () => {
         prompt_type: 'brand_description'
       }
       setLoaderMessage('Analyzing Brand Details...')
+
+      // API Call 1: Fetch Brand Description
       const resp = await fetch('https://fluencr-worker.shwetakale144.workers.dev/', {
         method: 'POST',
         body: JSON.stringify(formattedData),
         headers: {
           'Content-Type': 'application/json'
         },
-      })
+      });
 
       if (!resp.ok) {
         throw new Error('Network response was not ok');
@@ -100,27 +104,31 @@ const InfluencerSearchForm = () => {
 
       console.log(response);
       setLoaderMessage('Generating Content Signals...')
-      const [signalRespKeywords, signalRespTopics] = await Promise.all([fetch('https://fluencr-worker.shwetakale144.workers.dev/', {
-        method: 'POST',
-        body: JSON.stringify({
-          description: response,
-          prompt_type: 'content_signal_keywords'
+
+      // API Call 2: Fetch Keywords and Topics
+      const [signalRespKeywords, signalRespTopics] = await Promise.all([
+        fetch('https://fluencr-worker.shwetakale144.workers.dev/', {
+          method: 'POST',
+          body: JSON.stringify({
+            description: response,
+            prompt_type: 'content_signal_keywords'
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          },
         }),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      }),
-      fetch('https://fluencr-worker.shwetakale144.workers.dev/', {
-        method: 'POST',
-        body: JSON.stringify({
-          description: response,
-          prompt_type: 'content_signal_topics'
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      })
-      ])
+        fetch('https://fluencr-worker.shwetakale144.workers.dev/', {
+          method: 'POST',
+          body: JSON.stringify({
+            description: response,
+            prompt_type: 'content_signal_topics'
+          }),
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        })
+      ]);
+
       if (!signalRespKeywords.ok || !signalRespTopics.ok) throw new Error('Network response was not ok');
 
       const signalsKeywordsJSON = await signalRespKeywords.json();
@@ -128,14 +136,33 @@ const InfluencerSearchForm = () => {
       const signalKeywords = extractAndFixJSON(signalsKeywordsJSON.response);
       const signalTopics = extractAndFixJSON(signalsTopicsJSON.response);
 
-      console.log(signalKeywords, signalTopics)
+      console.log(signalKeywords, signalTopics);
+
+      // Save form data and API results to localStorage
+      localStorage.setItem('formData', JSON.stringify(formData));
+      localStorage.setItem('apiResults', JSON.stringify({
+        brandDescription: response,
+        keywords: signalKeywords,
+        topics: signalTopics
+      }));
+
+      navigate('/brand-details')
+
     } catch (err) {
       console.log(err)
     } finally {
       setLoading(false)
     }
-    // alert('Search criteria submitted! (Check console for data)');
   };
+
+  useEffect(()=>{
+  const formData = localStorage.getItem('formData');
+  const apiResults = localStorage.getItem('apiResults');
+
+  if(apiResults && formData){
+    navigate('/brand-details')
+  }
+  }, [navigate])
 
   const isFormValid = formData.brandType && formData.productFocus &&
     formData.idealCustomers.length > 0 && formData.brandVibe.length > 0 &&

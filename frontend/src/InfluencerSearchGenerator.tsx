@@ -1,58 +1,24 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Search, Copy, Check, Target } from 'lucide-react';
+import { RefreshCw, Search, SquareArrowUpRight } from 'lucide-react';
 
 interface Data {
-    creator_profiles: string[],
-    search_keywords: string[],
-    lifestyle_topics: string[],
-    relevant_hashtags: string[],
-    customer_type: string[]
+    creator_profiles: string[];
+    search_keywords: string[];
+    lifestyle_topics: string[];
+    relevant_hashtags: string[];
+    customer_type: string[];
 }
 
 const InfluencerSearchGenerator = () => {
+    const [searchData, setSearchData] = useState<Data>({
+        creator_profiles: [],
+        search_keywords: [],
+        lifestyle_topics: [],
+        relevant_hashtags: [],
+        customer_type: []
+    });
 
-    // const [searchData, setSearchData] = useState<Data>(
-    //     {
-    //         creator_profiles: [
-    //             "Young adults", "Fitness enthusiasts", "Health-conscious professionals",
-    //             "Wellness experts", "Tech-savvy individuals", "Entrepreneurs",
-    //             "Inspirational figures", "Motivational speakers", "Lifestyle bloggers",
-    //             "Healthy living advocates"
-    //         ],
-    //         search_keywords: [
-    //             "fitness tips", "wellness hacks", "health and wellness", "self-improvement",
-    //             "productivity hacks", "mindfulness", "motivation", "inspiration",
-    //             "lifestyle transformation", "tech-enabled solutions", "innovation",
-    //             "health and wellness tips", "fitness motivation", "wellness inspiration",
-    //             "healthy living", "self-care", "mindful living"
-    //         ],
-    //         lifestyle_topics: [
-    //             "wellness", "fitness", "health", "self-improvement", "productivity",
-    //             "motivation", "innovation", "technology", "lifestyle", "personal development"
-    //         ],
-    //         relevant_hashtags: [
-    //             "#wellnessWednesday", "#fitnessmotivation", "#healthyliving", "#selfcare",
-    //             "#productivityhacks", "#motivationmonday", "#innovationnation", "#techforwellness",
-    //             "#lifestyleblogger", "#personalgrowth", "#healthandwellness", "#fitnessjourney",
-    //             "#wellnessjourney", "#selfimprovement"
-    //         ],
-    //         customer_type: [
-    //             'Gen Z', 'Working Women', 'Moms', 'Students', 'Millennials', 'Professionals',
-    //             'Teens', 'Young Adults', 'Parents', 'Fitness Enthusiasts', 'Entrepreneurs'
-    //         ]
-    //     }
-    // )
-    const [searchData, setSearchData] = useState<Data>(
-        {
-            creator_profiles: [],
-            search_keywords: [],
-            lifestyle_topics: [],
-            relevant_hashtags: [],
-            customer_type: []
-        }
-    )
     const [searchTerms, setSearchTerms] = useState<string[]>([]);
-    const [copiedIndex, setCopiedIndex] = useState<null | number>(null);
 
     useEffect(() => {
         const formData = JSON.parse(localStorage.getItem('formData') || '{}');
@@ -64,15 +30,15 @@ const InfluencerSearchGenerator = () => {
             lifestyle_topics: apiResults.topics.lifestyle_topics,
             relevant_hashtags: apiResults.topics.relevant_hashtags,
             customer_type: formData.idealCustomers
-        }
-        console.log(apiResults, formData)
-        console.log(newData.search_keywords, newData.lifestyle_topics, newData.relevant_hashtags, newData.customer_type)
+        };
+        console.log(apiResults, formData);
+        console.log(newData.search_keywords, newData.lifestyle_topics, newData.relevant_hashtags, newData.customer_type);
         setSearchData(newData);
-    }, [])
+    }, []);
 
     useEffect(() => {
         generateSearchTerms();
-    }, [searchData])
+    }, [searchData]);
 
     const getRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -96,11 +62,11 @@ const InfluencerSearchGenerator = () => {
             terms.push(`best ${topic} strategies`);
         }
 
-
         for (let i = 0; i < Math.min(searchData.creator_profiles.length, 4); i++) {
-            const topic = getRandom(searchData.creator_profiles);
-            terms.push(`${topic}`);
+            const profile = getRandom(searchData.creator_profiles);
+            terms.push(`${profile}`);
         }
+
         const shuffledTerms = terms.sort(() => Math.random() - 0.5);
 
         // Remove duplicates and limit to 15
@@ -108,14 +74,8 @@ const InfluencerSearchGenerator = () => {
         setSearchTerms(uniqueTerms.slice(0, 15));
     };
 
-    const copyToClipboard = async (text: string, index: number) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            setCopiedIndex(index);
-            setTimeout(() => setCopiedIndex(null), 2000);
-        } catch (err) {
-            console.error('Failed to copy text: ', err);
-        }
+    const handleNavigate = (term: string) => {
+        window.open(`/influencer?q=${encodeURIComponent(term)}`);
     };
 
     return (
@@ -124,7 +84,7 @@ const InfluencerSearchGenerator = () => {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center mb-3">
-                        <Target className="mr-3 text-purple-600" size={32} />
+                        <Search className="mr-3 text-purple-600" size={32} />
                         <h1 className="text-4xl font-bold text-gray-800">
                             Brand Influencer Search Generator
                         </h1>
@@ -155,21 +115,19 @@ const InfluencerSearchGenerator = () => {
                         <div className="space-y-3">
                             {searchTerms.map((term, index) => (
                                 <div key={index} className="group relative">
-                                    <div className="bg-gradient-to-r from-gray-50 to-purple-50 rounded-lg p-4 hover:from-gray-100 hover:to-purple-100 transition-all">
-                                        <div className="flex items-center justify-between">
+                                    <div
+                                        onClick={() => handleNavigate(term)}
+                                        className="bg-gradient-to-r from-gray-50 to-purple-50 rounded-lg p-4 hover:from-gray-100 hover:to-purple-100 transition-all">
+                                        <div
+                                            className="flex items-center justify-between">
                                             <span className="text-gray-800 font-medium flex-1 mr-4">
                                                 {term}
                                             </span>
                                             <button
-                                                onClick={() => copyToClipboard(term, index)}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-purple-100 hover:bg-purple-200 text-purple-700 p-2 rounded-md"
-                                                title="Copy to clipboard"
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity bg-purple-100 hover:bg-purple-200 text-purple-700  rounded-md"
+                                                title="Navigate to influencer page"
                                             >
-                                                {copiedIndex === index ? (
-                                                    <Check size={16} className="text-green-600" />
-                                                ) : (
-                                                    <Copy size={16} />
-                                                )}
+                                                <SquareArrowUpRight size={20} />
                                             </button>
                                         </div>
                                     </div>

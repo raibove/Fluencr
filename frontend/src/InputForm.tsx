@@ -13,7 +13,7 @@ const InfluencerSearchForm = () => {
   });
 
   const brandTypes = [
-    'Makeup', 'Cafe', 'Fitness', 'Tech', 'Pet', 'Fashion', 'Food & Beverage', 
+    'Makeup', 'Cafe', 'Fitness', 'Tech', 'Pet', 'Fashion', 'Food & Beverage',
     'Travel', 'Home & Decor', 'Health & Wellness', 'Beauty', 'Gaming', 'Education'
   ];
 
@@ -42,21 +42,64 @@ const InfluencerSearchForm = () => {
   const handleMultiSelect = (field: keyof BrandDetails, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [field]: prev[field].includes(value) 
+      [field]: prev[field].includes(value)
         ? (prev[field] as string[]).filter((item: string) => item !== value)
         : [...prev[field], value]
     }));
   };
 
-  const handleSubmit = () => {
+  function extractContent(input: string) {
+    const regex = /"([^"]*)"/;  // Match content between quotes
+    const match = input.match(regex);
+
+    if (match) {
+      return match[1];  // Return the content inside the quotes
+    } else if (input.includes('\n')) {
+      const lines = input.split('\n');
+      if (lines[1].length !== 0)
+        return lines[1];  // Return the content on the second line (index 1) 
+    }
+    return input;  // If no quotes found, return the original content
+  }
+
+  const handleSubmit = async () => {
     if (!isFormValid) return;
     console.log('Form Data:', formData);
-    alert('Search criteria submitted! (Check console for data)');
+    try {
+      const formattedData = {
+        brand_type: formData.brandType,
+        product_focus: formData.productFocus,
+        audience: formData.idealCustomers,
+        vibe: formData.brandVibe,
+        goal: formData.marketingGoal,
+        extra_keywords: formData.hashtags,
+      }
+
+      const resp = await fetch('https://fluencr-worker.shwetakale144.workers.dev/', {
+        method: 'POST',
+        body: JSON.stringify(formattedData),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      })
+
+      if (!resp.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await resp.json();
+      const response = extractContent(data.response);
+
+      console.log(response);
+    } catch (err) {
+      console.log(err)
+    }
+    // alert('Search criteria submitted! (Check console for data)');
   };
 
-  const isFormValid = formData.brandType && formData.productFocus && 
-                     formData.idealCustomers.length > 0 && formData.brandVibe.length > 0 && 
-                     formData.marketingGoal;
+  const isFormValid = formData.brandType && formData.productFocus &&
+    formData.idealCustomers.length > 0 && formData.brandVibe.length > 0 &&
+    formData.marketingGoal;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-6">
@@ -123,11 +166,10 @@ const InfluencerSearchForm = () => {
                   key={customer}
                   type="button"
                   onClick={() => handleMultiSelect('idealCustomers', customer)}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    formData.idealCustomers.includes(customer)
-                      ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`p-3 rounded-lg border-2 transition-all ${formData.idealCustomers.includes(customer)
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   {customer}
                 </button>
@@ -154,11 +196,10 @@ const InfluencerSearchForm = () => {
                   key={vibe}
                   type="button"
                   onClick={() => handleMultiSelect('brandVibe', vibe)}
-                  className={`p-3 rounded-lg border-2 transition-all ${
-                    formData.brandVibe.includes(vibe)
-                      ? 'border-purple-500 bg-purple-50 text-purple-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`p-3 rounded-lg border-2 transition-all ${formData.brandVibe.includes(vibe)
+                    ? 'border-purple-500 bg-purple-50 text-purple-700'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   {vibe}
                 </button>
@@ -216,11 +257,10 @@ const InfluencerSearchForm = () => {
             <button
               onClick={handleSubmit}
               disabled={!isFormValid}
-              className={`w-full py-4 px-6 rounded-lg text-white font-semibold text-lg transition-all ${
-                isFormValid
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg hover:shadow-xl'
-                  : 'bg-gray-400 cursor-not-allowed'
-              }`}
+              className={`w-full py-4 px-6 rounded-lg text-white font-semibold text-lg transition-all ${isFormValid
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg hover:shadow-xl'
+                : 'bg-gray-400 cursor-not-allowed'
+                }`}
             >
               {isFormValid ? 'Find Matching Influencers' : 'Please complete required fields'}
             </button>
@@ -230,15 +270,15 @@ const InfluencerSearchForm = () => {
           <div className="pt-4">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
               <span>Form Progress</span>
-              <span>{Math.round((Object.values(formData).filter(val => 
+              <span>{Math.round((Object.values(formData).filter(val =>
                 Array.isArray(val) ? val.length > 0 : val !== ''
               ).length / 6) * 100)}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-gradient-to-r from-purple-600 to-indigo-600 h-2 rounded-full transition-all duration-300"
                 style={{
-                  width: `${(Object.values(formData).filter(val => 
+                  width: `${(Object.values(formData).filter(val =>
                     Array.isArray(val) ? val.length > 0 : val !== ''
                   ).length / 6) * 100}%`
                 }}

@@ -98,9 +98,9 @@ export const searchProfiles = async (keyword) => {
             throw new Error("No content found in search result");
         }
 
-        // const allInstagramProfiles = await getAllInstagramProfiles(instaLinks, client);
+        const allInstagramProfiles = await getAllInstagramProfiles(instaLinks, client);
         console.log('allInstagramProfiles', instaLinks)
-        return instaLinks;
+        return allInstagramProfiles;
     } catch (error) {
         console.error("LinkedIn search error:", error);
         return [];

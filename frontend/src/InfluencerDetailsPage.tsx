@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Sparkles, ExternalLink, Loader2 } from 'lucide-react';
 
 const InstagramDetailsPage = () => {
-  const [profiles, setProfiles] = useState<{url: string, type: string}[]>([]);
+  const [profiles, setProfiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<null | string>(null);
   const [keyword, setKeyword] = useState('');
@@ -10,7 +10,7 @@ const InstagramDetailsPage = () => {
   useEffect(() => {
     // Get keyword from URL query parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const searchKeyword = urlParams.get('keyword') || 'lifestyle';
+    const searchKeyword = urlParams.get('q') || 'lifestyle';
     setKeyword(searchKeyword);
     
     // Fetch profiles from API
@@ -23,7 +23,8 @@ const InstagramDetailsPage = () => {
       setError(null);
       
       // Replace with your actual API endpoint
-      const response = await fetch(`https://test-bright-priv.onrender.com/search?keyword=${encodeURIComponent(searchKeyword)}`);
+    //   const response = await fetch(`https://test-bright-priv.onrender.com/search?keyword=${encodeURIComponent(searchKeyword)}`);
+      const response = await fetch(`https://fluencr.onrender.com/search?keyword=${encodeURIComponent(searchKeyword)}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -157,11 +158,11 @@ const InstagramDetailsPage = () => {
                         <div className="flex-1 mr-3">
                           <p className="text-sm text-gray-600 mb-1">Post URL:</p>
                           <p className="text-sm font-mono text-gray-800 break-all">
-                            {post.url || `https://instagram.com/p/sample_post_${index + 1}/`}
+                            {post || `https://instagram.com/p/sample_post_${index + 1}/`}
                           </p>
                         </div>
                         <button 
-                          onClick={() => window.open(post.url || `https://instagram.com/p/sample_post_${index + 1}/`, '_blank')}
+                          onClick={() => window.open(post || `https://instagram.com/p/sample_post_${index + 1}/`, '_blank')}
                           className="p-2 text-gray-500 hover:text-purple-600 transition-colors"
                         >
                           <ExternalLink className="h-4 w-4" />
@@ -170,26 +171,26 @@ const InstagramDetailsPage = () => {
                     </div>
 
                     {/* Creator Info */}
-                    {post.type && (
+                    {/* {post.type && (
                       <div className="mb-4">
                         <p className="text-sm text-gray-600">Post Type:</p>
                         <p className="font-medium text-gray-800">{post.type}</p>
                       </div>
-                    )}
+                    )} */}
                   </div>
                   
                   {/* Action Buttons */}
                   <div className="px-6 pb-6">
                     <div className="flex space-x-2">
                       <button 
-                        onClick={() => window.open(post.url || `https://instagram.com/p/sample_post_${index + 1}/`, '_blank')}
+                        onClick={() => window.open(post || `https://instagram.com/p/sample_post_${index + 1}/`, '_blank')}
                         className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-all"
                       >
                         View Post
                       </button>
                       <button 
                         onClick={() => {
-                          navigator.clipboard.writeText(post.url || `https://instagram.com/p/sample_post_${index + 1}/`);
+                          navigator.clipboard.writeText(post || `https://instagram.com/p/sample_post_${index + 1}/`);
                         }}
                         className="p-2 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors"
                       >
